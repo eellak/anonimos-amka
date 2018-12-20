@@ -4,7 +4,9 @@
 
 Η εγκατάσταση στο καθένα από αυτά μπορεί να γίνει με τις εντολές:
 > pip install pandas
+
 > pip install pysha3
+
 > pip install python-secrets
 
 Στη συνέχεια αρκεί να έχετε το script και ένα csv αρχείο με τα ραντεβού όπως το αρχείο 
