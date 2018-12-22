@@ -43,33 +43,29 @@ def anonymize(inFile, outFile, cols, dict_file):
 
 def anonymize_with_secret(inFile, outFile, cols, dict_file, secret):
    df=pd.read_csv(inFile)
-   pat_dict={}
-   inv_pat_dict={}
-   for pid in df.PatID.unique():
-       spid=secret+str(pid)
-       hashedpid=hashlib.sha3_512(spid.encode()).hexdigest()
-       pat_dict[hashedpid]=pid
-       inv_pat_dict[pid]=hashedpid
-
-   doc_dict={}
-   inv_doc_dict={}
-   for did in df.DocID.unique():
-       sdid=secret+str(did)
-       hasheddid=hashlib.sha3_512(sdid.encode()).hexdigest()
-       doc_dict[hasheddid]=did
-       inv_doc_dict[did]=hasheddid
-
-   df.PatID=df.PatID.apply(lambda x: hashlib.sha3_512((secret+str(x)).encode()).hexdigest())
-   df.DocID=df.DocID.apply(lambda x: hashlib.sha3_512((secret+str(x)).encode()).hexdigest())
-
-   df.to_csv(outFile, index=False)
-
    all_dicts={}
    all_dicts['secret']=secret
-   all_dicts['patients']=pat_dict
-   all_dicts['inv_patients']=inv_pat_dict
-   all_dicts['doctors']=doc_dict
-   all_dicts['inv_doctors']=inv_doc_dict
+  
+   for col in cols:
+       # Check if column exists
+       if col not in df.columns:
+           print('column [{col}] not found in file. Skipping column'.format(col=col))
+           continue
+           
+       col_dict={}
+       inv_col_dict={}
+
+       for pid in df[col].unique():
+           spid=secret+str(pid)
+           hashedpid=hashlib.sha3_512(spid.encode()).hexdigest()
+           col_dict[hashedpid]=pid
+           inv_col_dict[pid]=hashedpid
+
+       df[col]=df[col].apply(lambda x: hashlib.sha3_512((secret+str(x)).encode()).hexdigest())
+       all_dicts[col]=col_dict
+       all_dicts[col]=inv_col_dict
+       
+   df.to_csv(outFile, index=False)
 
    with open(dict_file, 'w') as f:
        json.dump(all_dicts, f)
